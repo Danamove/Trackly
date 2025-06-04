@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackly - Professional Candidate Management</title>
+  
+  <!-- Chart.js for analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      color: #4a5568;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      color: #718096;
+      margin-top: 5px;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .user-details h3 {
+      color: #4a5568;
+      margin: 0;
+    }
+
+    .user-details p {
+      color: #718096;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .logout-btn {
+      background: #e53e3e;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: #c53030;
+      transform: translateY(-2px);
+    }
+
+    .tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      flex: 1;
+      min-width: 200px;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: #718096;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+      transform: translateY(-2px);
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      min-height: 600px;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-header h2 {
+      color: #4a5568;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #e53e3e, #c53030);
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 8px 25px rgba(229, 62, 62, 0.4);
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: #718096;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      background: #fed7d7;
+      color: #c53030;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #e53e3e;
+    }
+
+    .success-message {
+      background: #c6f6d5;
+      color: #2f855a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #38a169;
+    }
+
+    .retry-container {
+      text-align: center;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      margin: 20px 0;
+    }
+
+    .retry-message {
+      color: #718096;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+    }
+
+    .retry-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .data-grid {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .data-grid table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-grid th {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .data-grid td {
+      padding: 15px;
+      border-bottom: 1px solid #e2e8f0;
+      transition: background-color 0.3s ease;
+    }
+
+    .data-grid tr:hover td {
+      background-color: #f7fafc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div>
+        <h1>Trackly</h1>
+        <p>Professional Candidate Management System</p>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-details">
+          <h3 id="userName">Loading...</h3>
+          <p id="userRole">User</p>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading" id="mainLoading">
+      <div class="spinner"></div>
+      <p>Loading Trackly system...</p>
+    </div>
+
+    <!-- Client Management Tab -->
+    <div id="clients" class="tab-content active">
+      <div class="section-header">
+        <h2>Client Management</h2>
+      </div>
+      
+      <div class="data-grid">
+        <table id="clientsTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>Email</th>
+              <th>Company</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody id="clientsTableBody">
+            <!-- Data will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURATION - Replace with your actual Google Apps Script URL
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvuCxZbQhrwIlsPXHrz1jYXiGADf_MymhrYQNLJh7zYAGNp3qOA2_Fq7YgYa9x57ZaUg/exec';
+    
+    // Global variables
+    let data = {
+      clients: [],
+      jobs: [],
+      candidates: [],
+      users: []
+    };
+    let currentUser = null;
+
+    // Simple initialization
+    async function initializeApp() {
+      console.log('Initializing Trackly application...');
+      showLoading(true);
+      
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'loadAllData' })
+        });
+
+        const result = await response.json();
+        console.log('Server response:', result);
+
+        if (result.success && result.user && result.user.hasAccess) {
+          currentUser = result.user;
+          data = result.datasets || {};
+          
+          updateUserInterface();
+          updateClientsTable();
+          
+          showLoading(false);
+          console.log('Application initialized successfully');
+        } else {
+          throw new Error(result.error || 'Access denied');
+        }
+        
+      } catch (error) {
+        console.error('Failed to initialize application:', error);
+        showLoading(false);
+        showRetryInterface(error.message);
+      }
+    }
+
+    function updateUserInterface() {
+      if (!currentUser) return;
+      
+      document.getElementById('userName').textContent = currentUser.name || 'User';
+      document.getElementById('userRole').textContent = currentUser.isAdmin ? 'Administrator' : 'User';
+      
+      const avatar = document.getElementById('userAvatar');
+      if (currentUser.name) {
+        avatar.textContent = currentUser.name.charAt(0).toUpperCase();
+      }
+    }
+
+    function updateClientsTable() {
+      const tbody = document.getElementById('clientsTableBody');
+      tbody.innerHTML = '';
+
+      if (!data.clients || data.clients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #718096;">No clients found</td></tr>';
+        return;
+      }
+
+      data.clients.forEach(client => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${client.name || ''}</td>
+          <td>${client.contactPerson || ''}</td>
+          <td>${client.email || ''}</td>
+          <td>${client.company || ''}</td>
+          <td>${client.phone || ''}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function showLoading(show) {
+      const loading = document.getElementById('mainLoading');
+      if (show) {
+        loading.classList.add('show');
+      } else {
+        loading.classList.remove('show');
+      }
+    }
+
+    function showRetryInterface(errorMessage) {
+      const container = document.querySelector('.container');
+      const retryDiv = document.createElement('div');
+      retryDiv.className = 'retry-container';
+      retryDiv.innerHTML = `
+        <h2>Connection Error</h2>
+        <p class="retry-message">${errorMessage}</p>
+        <button class="retry-btn" onclick="location.reload()">Retry Connection</button>
+        <p style="margin-top: 20px; color: #718096; font-size: 0.9rem;">
+          If the problem persists, please check your internet connection or contact your administrator.
+        </p>
+      `;
+      
+      container.innerHTML = '';
+      container.appendChild(retryDiv);
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.reload();
+      }
+    }
+
+    // Initialize the application when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, initializing application...');
+      initializeApp();
+    });
+  </script>
+</body>
+</html>
