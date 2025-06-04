@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackly Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px;
+    }
+    button:hover {
+      background: #5a67d8;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      min-height: 100px;
+      white-space: pre-wrap;
+    }
+    .success {
+      background: #c6f6d5;
+      border-left: 4px solid #38a169;
+    }
+    .error {
+      background: #fed7d7;
+      border-left: 4px solid #e53e3e;
+    }
+    .loading {
+      background: #bee3f8;
+      border-left: 4px solid #3182ce;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Trackly Connection Test</h1>
+    <p>נבדוק אם הקישור לשרת Google Apps Script עובד</p>
+    
+    <button onclick="testConnection()">🔍 Test Server Connection</button>
+    <button onclick="testGetUser()">👤 Test Get User Info</button>
+    <button onclick="testLoadData()">📊 Test Load Data</button>
+    
+    <div id="result" class="result">לחץ על כפתור לבדיקה...</div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvuCxZbQhrwIlsPXHrz1jYXiGADf_MymhrYQNLJh7zYAGNp3qOA2_Fq7YgYa9x57ZaUg/exec';
+    
+    function showResult(message, type = 'loading') {
+      const result = document.getElementById('result');
+      result.textContent = message;
+      result.className = `result ${type}`;
+    }
+
+    async function testConnection() {
+      showResult('🔄 Testing basic connection...', 'loading');
+      
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'GET',
+          mode: 'no-cors'
+        });
+        
+        showResult('✅ Basic connection successful!\nThe server is reachable.', 'success');
+        
+      } catch (error) {
+        showResult(`❌ Connection failed!\nError: ${error.message}`, 'error');
+      }
+    }
+
+    async function testGetUser() {
+      showResult('🔄 Testing getUserInfo...', 'loading');
+      
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'getUserInfo' })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        showResult(`✅ getUserInfo successful!\n\nResponse:\n${JSON.stringify(result, null, 2)}`, 'success');
+        
+      } catch (error) {
+        showResult(`❌ getUserInfo failed!\nError: ${error.message}`, 'error');
+      }
+    }
+
+    async function testLoadData() {
+      showResult('🔄 Testing loadAllData...', 'loading');
+      
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'loadAllData' })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        showResult(`✅ loadAllData successful!\n\nResponse:\n${JSON.stringify(result, null, 2)}`, 'success');
+        
+      } catch (error) {
+        showResult(`❌ loadAllData failed!\nError: ${error.message}`, 'error');
+      }
+    }
+  </script>
+</body>
+</html>
